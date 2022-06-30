@@ -1,4 +1,4 @@
-import $func from "complex-func"
+import $func from 'complex-func'
 import Data from './Data'
 import config from '../../config'
 type getDataType = () => any

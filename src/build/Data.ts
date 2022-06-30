@@ -1,4 +1,4 @@
-import $func from "complex-func"
+import $func from 'complex-func'
 import { consoleType, exportOption } from "complex-func/src/data/utils/exportMsg"
 
 declare global {

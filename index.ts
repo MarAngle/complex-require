@@ -1,3 +1,3 @@
-import _require from './src/main'
+import $require from './src/main'
 
-export default _require
+export default $require
