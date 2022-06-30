@@ -1,5 +1,5 @@
 import $func from "complex-func"
-import { anyFunction } from "complex-func/ts"
+import { anyFunction } from "complex-func/ts/index"
 import Data from './Data'
 import config from '../../config'
 import TokenRule, { initOptionType as TokenRuleInitOptionType } from './TokenRule'

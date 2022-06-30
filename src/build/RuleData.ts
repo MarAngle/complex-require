@@ -1,5 +1,5 @@
 import $func from "complex-func"
-import { objectAny } from "complex-func/ts"
+import { objectAny } from "complex-func/ts/index"
 import Data from './Data'
 
 const base = {
