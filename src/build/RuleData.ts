@@ -1,5 +1,5 @@
-import _func from "complex-func"
-import { objectAny } from "complex-func/src/ts"
+import $func from "complex-func"
+import { objectAny } from "complex-func/ts"
 import Data from './Data'
 
 const base = {
@@ -107,20 +107,20 @@ class RuleData extends Data {
     if (propObject === true) {
       for (const n in data) {
         const info = data[n]
-        if (_func.getType(info) == 'object') {
+        if ($func.getType(info) == 'object') {
           regStr += this.$buildRegData(true, info)
         } else {
           regStr += info
         }
       }
     } else {
-      const type = _func.getType(propObject)
+      const type = $func.getType(propObject)
       if (type == 'object') {
         for (const i in propObject) {
           const prop = propObject[i]
           const info = data[i]
-          if (_func.getType(info) === 'object') {
-            regStr += this.$buildRegData(_func.getType(prop) === 'string' ? true : prop, info)
+          if ($func.getType(info) === 'object') {
+            regStr += this.$buildRegData($func.getType(prop) === 'string' ? true : prop, info)
           } else {
             regStr += info
           }
@@ -163,7 +163,7 @@ class RuleData extends Data {
       if (merge) {
         reg = this.$buildReg(reg, merge)
       }
-      const type = _func.getType(reg, true)
+      const type = $func.getType(reg, true)
       if (type != 'regexp') {
         reg = new RegExp(reg)
       }

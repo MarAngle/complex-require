@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from 'axios'
-import _func from "complex-func"
+import $func from "complex-func"
 import { consoleType, exportOption } from 'complex-func/src/data/utils/exportMsg'
-import { objectAny } from "complex-func/src/ts"
+import { objectAny } from "complex-func/ts"
 import config from './../config'
 import RequireRule, { initOptionType as RequireRuleInitOptionType, responseType } from './build/RequireRule'
 
@@ -150,7 +150,7 @@ const _require: requireDataType = {
     if (!this.rule.default) {
       this.rule.default = this.rule[firstProp as string]
     }
-    if (_func.getEnv('real') == 'development' && config.Require.devShowRule) {
+    if ($func.getEnv('real') == 'development' && config.Require.devShowRule) {
       this.$exportMsg(`默认的请求规则处理程序为[${this.rule.default.$selfName()}]`, 'log')
     }
   },
@@ -230,7 +230,7 @@ const _require: requireDataType = {
       msg: ''
     }
     // 检查参数
-    if (_func.getType(optionData, true) != 'object') {
+    if ($func.getType(optionData, true) != 'object') {
       check.next = false
       check.code = 'undefined optionData'
       check.msg = '未定义请求数据'
@@ -313,7 +313,7 @@ const _require: requireDataType = {
           optionData.headers['Content-Type'] = config.Require.formContentType
         }
         if (optionData.requestCurrentDataType == 'json') {
-          optionData.data = _func.jsonToForm(optionData.data)
+          optionData.data = $func.jsonToForm(optionData.data)
         }
       } else if (optionData.requestDataType == 'json') {
         optionData.data = JSON.stringify(optionData.data)
@@ -321,7 +321,7 @@ const _require: requireDataType = {
       // 新版本单独处理此逻辑
       if (optionData.params) {
         for (const n in optionData.params) {
-          if (_func.isArray(optionData.params[n])) {
+          if ($func.isArray(optionData.params[n])) {
             optionData.params[n] = optionData.params[n].join(',')
           }
         }
@@ -446,7 +446,7 @@ const _require: requireDataType = {
         title = failMsgOption.title
       }
       if (content) {
-        _func.showMsg(content, type, title)
+        $func.showMsg(content, type, title)
       }
     }
   },
@@ -634,7 +634,7 @@ const _require: requireDataType = {
    * @param {object} [option] 额外信息
    */
   $exportMsg(content, type = 'error', option) {
-    _func.exportMsg(this.$createMsg(content), type, option)
+    $func.exportMsg(this.$createMsg(content), type, option)
   }
 }
 

@@ -1,5 +1,5 @@
-import _func from "complex-func"
-import { anyFunction } from "complex-func/src/ts"
+import $func from "complex-func"
+import { anyFunction } from "complex-func/ts"
 import Data from './Data'
 import config from '../../config'
 import TokenRule, { initOptionType as TokenRuleInitOptionType } from './TokenRule'
@@ -136,7 +136,7 @@ class RequireRule extends Data {
       if (optionData.token === undefined) {
         optionData.token = config.RequireRule.defaultTokenName
       }
-      const type = _func.getType(optionData.token)
+      const type = $func.getType(optionData.token)
       if (type == 'string') {
         if (optionData.token === config.RequireRule.defaultTokenName) {
           for (const n in this.token.data) {
@@ -190,7 +190,7 @@ class RequireRule extends Data {
       const next = tokenRuleItem.checkData(tokenRuleData)
       if (next == 'success') {
         if (tokenRuleItem.location == 'body') {
-          _func.appendProp(optionData.data, prop, tokenRuleData, optionData.localType)
+          $func.appendProp(optionData.data, prop, tokenRuleData, optionData.localType)
         } else if (tokenRuleItem.location == 'header') {
           optionData.headers[prop] = tokenRuleData
         } else if (tokenRuleItem.location == 'params') {

@@ -1,4 +1,4 @@
-import _func from "complex-func"
+import $func from "complex-func"
 import Data from './Data'
 import config from '../../config'
 type getDataType = () => any
@@ -31,7 +31,7 @@ class TokenRule extends Data {
   removeCurrentData: false | removeDataType
   constructor (prop: string, initOption: initOptionType) {
     super()
-    const type = _func.getType(initOption)
+    const type = $func.getType(initOption)
     if (type !== 'object') {
       initOption = {
         data: initOption
@@ -45,7 +45,7 @@ class TokenRule extends Data {
     this.getCurrentData = (initOption as initOptionObject).getData || false
     this.removeCurrentData = (initOption as initOptionObject).removeData || false
     this.checkCurrentData = (initOption as initOptionObject).checkData || function(data) {
-      return _func.isExist(data)
+      return $func.isExist(data)
     }
   }
   /**
@@ -65,7 +65,7 @@ class TokenRule extends Data {
   setData(parentProp: string, data: any, noSave?: boolean) {
     this.data = data
     if (!noSave) {
-      _func.setLocalData(this.$buildLocalTokenName(parentProp), data)
+      $func.setLocalData(this.$buildLocalTokenName(parentProp), data)
     }
   }
   /**
@@ -76,7 +76,7 @@ class TokenRule extends Data {
   getData(parentProp: string) {
     let data = this.getCurrentData ? this.getCurrentData() : this.data
     if (!this.checkCurrentData(data)) {
-      data = _func.getLocalData(this.$buildLocalTokenName(parentProp))
+      data = $func.getLocalData(this.$buildLocalTokenName(parentProp))
       if (this.checkCurrentData(data)) {
         this.setData(parentProp, data, true)
       }
@@ -108,7 +108,7 @@ class TokenRule extends Data {
    * @param {boolean} isDelete 是否进行删除
    */
   removeData(parentProp: string, isDelete?: boolean) {
-    _func.removeLocalData(this.$buildLocalTokenName(parentProp))
+    $func.removeLocalData(this.$buildLocalTokenName(parentProp))
     this.data = undefined
     if (this.removeCurrentData) {
       this.removeCurrentData(isDelete, parentProp)
