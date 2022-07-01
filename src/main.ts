@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from 'axios'
 import $func from 'complex-func'
 import { consoleType, exportOption } from 'complex-func/src/data/utils/exportMsg'
-import { objectAny } from 'complex-func/ts/index'
+import { objectAny } from './../ts'
 import config from './../config'
 import RequireRule, { initOptionType as RequireRuleInitOptionType, responseType } from './build/RequireRule'
 
