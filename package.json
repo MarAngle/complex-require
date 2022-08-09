@@ -1,6 +1,6 @@
 {
   "name": "complex-require",
-  "version": "3.0.0-beta.5",
+  "version": "3.0.0-beta.6",
   "description": "a complex require",
   "main": "index.ts",
   "repository": {
@@ -8,10 +8,12 @@
     "url": "https://github.com/MarAngle/complex-require.git"
   },
   "dependencies": {
-    "complex-func": "3.0.0-beta.6",
+    "complex-func": "3.0.0-beta.7",
     "axios": "^0.27.2"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "typescript": "~4.5.5"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
