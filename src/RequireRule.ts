@@ -52,7 +52,6 @@ class RequireRule extends Data {
   formatUrl?: formatUrlType
   formatResponse: formatResponseType
   requireFail?: requireFailType
-  // failMsg: undefined | ((errRes: any) => any)
   constructor({
     name,
     prop,

@@ -20,12 +20,12 @@
   > - optionData.params?:object,url(query参数)
   > - optionData.data?:object,body参数
   > - optionData.headers?:object,header参数
-  > - optionData.token?:string | object | any[],token设置项,不传根据token设置自动进行所有token的获取,传递string | string\[]根据string获取对应token,传递object | object[]则根据object生成token实例再进行获取
+  > - optionData.token?:string | string[],token设置项,不传根据token设置自动进行所有token的获取,传递string | string\[]根据string获取对应token
   > - optionData.responseType?:'arraybuffer', 'blob', 'document', 'json', 'text', 'stream',返回数据类型,仅返回json时对返回数据进行判断和格式化,默认值为json
-  > - optionData.requestDataType?:'json' | 'formdata',接口需要的数据类型,默认值为json
-  > - optionData.requestCurrentDataType?:'json' | 'formdata',当前data的数据类型,默认值为json
+  > - optionData.$dataType?:'json' | 'formdata',接口需要的数据类型,默认值为json
+  > - optionData.$currentDataType?:'json' | 'formdata',当前data的数据类型,默认值为json
   > - optionData.responseFormat?:boolean,是否对返回数据进行分析和格式化,默认为true
-  > - optionData.defaultOptionData?:object,默认参数重置method/requestDataType/requestCurrentDataType/responseType
+  > - optionData.defaultOptionData?:object,默认参数重置method/$dataType/$currentDataType/responseType
   > ### 返回值
   > - :Promise
 ### get
@@ -42,16 +42,16 @@
   > - optionData:object,设置项
   > ### 返回值
   > - :Promise
-### postform
+### form
   > ### 说明
-  > - post/require,defaultOptionData = { method: 'post', requestDataType: 'formdata' }
+  > - post/require,defaultOptionData = { method: 'post', $dataType: 'formdata' }
   > ### 参数
   > - optionData:object,设置项
   > ### 返回值
   > - :Promise
-### postfile
+### json
   > ### 说明
-  > - post/require,defaultOptionData = { method: 'post', requestDataType: 'formdata', requestCurrentDataType: 'formdata' }
+  > - post/require,defaultOptionData = { method: 'post', $dataType: 'formdata', $currentDataType: 'formdata' }
   > ### 参数
   > - optionData:object,设置项
   > ### 返回值
@@ -63,6 +63,7 @@
   > - tokenName:string,token名称
   > - data:any,token值
   > - prop:string,对应的rule.prop,默认为default
+  > - noSave?:boolean,是否不进行保存到local操作
   > ### 返回值
   > - :void
 ### getToken
@@ -73,13 +74,21 @@
   > - prop:string,对应的rule.prop,默认为default
   > ### 返回值
   > - tokenData:any
-### removeToken
+### clearToken
   > ### 说明
   > - 删除token
   > ### 参数
-  > - tokenName:string,token名称
+  > - tokenName:true | string,token名称
   > - prop:string,对应的rule.prop,默认为default
   > ### 返回值
-  > - isDelete:boolean
+  > - isClear:boolean
+### destroyToken
+  > ### 说明
+  > - 删除token
+  > ### 参数
+  > - tokenName:true | string,token名称
+  > - prop:string,对应的rule.prop,默认为default
+  > ### 返回值
+  > - isDestroy:boolean
 ---
 [更新历史](./history.md)

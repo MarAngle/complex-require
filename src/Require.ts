@@ -84,7 +84,11 @@ class Require extends Data {
     this.service = this.$buildService(initOption.option)
     this.formatUrl = initOption.formatUrl
     this.baseURL = initOption.baseURL || ''
-    this.status = {}
+    this.status = {
+      403: '拒绝访问!',
+      404: '很抱歉，资源未找到!',
+      504: '网络超时!'
+    }
     if (initOption.status) {
       for (const n in initOption.status) {
         this.status[n] = initOption.status[n]
@@ -101,7 +105,7 @@ class Require extends Data {
     }
     if (firstProp !== undefined) {
       if (!this.rule.default) {
-        this.rule.default = this.rule[firstProp as string]
+        this.rule.default = this.rule[firstProp]
       }
       if (getEnv('real') == 'development' && config.Require.devShowRule) {
         this.$exportMsg(`默认的请求规则处理程序为[${this.rule.default.$selfName()}]`, 'log')
@@ -157,7 +161,7 @@ class Require extends Data {
       return url
     }
   }
-  $checkRule (url: string): RequireRule {
+  $getRule (url: string): RequireRule {
     for (const n in this.rule) {
       const fg = this.rule[n].checkUrl(url)
       if (fg) {
@@ -180,7 +184,7 @@ class Require extends Data {
     } else {
       optionData.url = this.$formatUrl(optionData.url)
       // 检查RULE
-      const ruleItem = this.$checkRule(optionData.url)
+      const ruleItem = this.$getRule(optionData.url)
       // 添加默认值
       if (optionData.method === undefined && defaultOptionData.method !== undefined) {
         optionData.method = defaultOptionData.method
@@ -359,7 +363,7 @@ class Require extends Data {
       return false
     }
   }
-  clearToken (tokenName: string, prop = 'default') {
+  clearToken (tokenName: string | true, prop = 'default') {
     if (this.rule[prop]) {
       return this.rule[prop].clearToken(tokenName)
     } else {
@@ -373,7 +377,7 @@ class Require extends Data {
    * @param {string} prop 对应的rule.prop
    * @returns {boolean}
    */
-  destroyToken (tokenName: string, prop = 'default') {
+  destroyToken (tokenName: string | true, prop = 'default') {
     if (this.rule[prop]) {
       return this.rule[prop].destroyToken(tokenName)
     } else {

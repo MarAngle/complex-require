@@ -60,9 +60,9 @@ class TokenRule extends Data {
   }
   getData(parentProp: string) {
     let data = this.$getData ? this.$getData() : this.data
-    if (!this.checkData(data)) {
+    if (!this.$checkData(data)) {
       data = getLocalData(this.$getProp(parentProp))
-      if (this.checkData(data)) {
+      if (this.$checkData(data)) {
         this.setData(parentProp, data, true)
       }
     }
