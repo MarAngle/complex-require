@@ -129,7 +129,7 @@ class RequireRule extends Data {
       const next = tokenRuleItem.checkData(tokenData)
       if (next == 'success') {
         if (tokenRuleItem.location == 'body') {
-          appendProp(optionData.data, prop, tokenData, optionData.localType)
+          appendProp(optionData.data, prop, tokenData, optionData.$currentDataType)
         } else if (tokenRuleItem.location == 'header') {
           optionData.headers[prop] = tokenData
         } else if (tokenRuleItem.location == 'params') {

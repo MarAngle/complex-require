@@ -2,7 +2,7 @@ import axios, { AxiosInstance, AxiosRequestConfig, AxiosRequestHeaders } from 'a
 import { notice } from 'complex-func'
 import { noticeMsgType } from 'complex-func/src/notice'
 import { Data } from 'complex-utils'
-import { isArray, getType, jsonToForm, getEnv } from 'complex-utils'
+import { getType, jsonToForm, getEnv } from 'complex-utils'
 import config from '../config'
 import RequireRule, { initOptionType as RequireRuleInitOptionType } from './RequireRule'
 
@@ -19,11 +19,12 @@ type failType = {
 }
 
 interface customParameters {
-  $dataType?: 'json' | 'form'
-  $currentDataType?: 'json' | 'form'
-  $responseFormat?: boolean
-  $fail?: boolean | failType
+  $dataType?: 'json' | 'form' // 目标数据格式
+  $currentDataType?: 'json' | 'form' // 当前数据格式
+  $responseFormat?: boolean // 返回值格式化
+  $fail?: boolean | failType // 错误回调
 }
+
 
 export interface RequireOption<D = any> extends AxiosRequestConfig<D>, customParameters {
   url: string,
@@ -36,6 +37,9 @@ export interface IsFormatRequireOption<D = any> extends RequireOption {
   params: any
 }
 
+interface defaultRequireOption extends customParameters {
+  method?: RequireOption['method']
+}
 interface checkType {
   next: boolean,
   code: string,
@@ -162,7 +166,7 @@ class Require extends Data {
     }
     return this.rule.default
   }
-  $check (optionData: RequireOption, defaultOptionData: customParameters = {}) {
+  $check (optionData: RequireOption, defaultOptionData: defaultRequireOption = {}) {
     const check: checkType = {
       next: true,
       code: '',
@@ -178,6 +182,9 @@ class Require extends Data {
       // 检查RULE
       const ruleItem = this.$checkRule(optionData.url)
       // 添加默认值
+      if (optionData.method === undefined && defaultOptionData.method !== undefined) {
+        optionData.method = defaultOptionData.method
+      }
       if (!optionData.headers) {
         optionData.headers = {}
       }
@@ -194,7 +201,7 @@ class Require extends Data {
         optionData.$currentDataType = defaultOptionData.$currentDataType
       }
       if (optionData.$responseFormat === undefined && defaultOptionData.$responseFormat !== undefined) {
-        optionData.$responseFormat = defaultOptionData.$responseFormat === undefined ? true : defaultOptionData.$responseFormat
+        optionData.$responseFormat = defaultOptionData.$responseFormat
       }
       // RequireRule检查
       const ruleCheck = ruleItem.formatRequire(optionData as IsFormatRequireOption)
@@ -231,7 +238,7 @@ class Require extends Data {
       notice.showMsg(content, type, title, duration)
     }
   }
-  require (optionData: RequireOption, defaultOptionData?: customParameters) {
+  require (optionData: RequireOption, defaultOptionData?: defaultRequireOption) {
     const check = this.$check(optionData, defaultOptionData)
     if (check.next) {
       if (optionData.$dataType == 'form') {
@@ -244,25 +251,26 @@ class Require extends Data {
       } else if (optionData.$dataType == 'json') {
         optionData.data = JSON.stringify(optionData.data)
       }
-      return this.$requireNext(optionData as IsFormatRequireOption, check as successCheckType)
+      return this.$require(optionData as IsFormatRequireOption, check as successCheckType)
     } else {
       this.$showFailMsg(true, optionData.$fail, check.msg, 'error')
       return Promise.reject({ status: 'fail', ...check })
     }
   }
-  $requireNext (optionData: IsFormatRequireOption, check: successCheckType) {
+  $require (optionData: IsFormatRequireOption, check: successCheckType) {
     return new Promise((resolve, reject) => {
       this.ajax(optionData).then(response => {
-        if (optionData.$responseFormat && (!optionData.responseType || optionData.responseType == 'json')) {
-          const nextdata = check.ruleItem.formatResponse(response, optionData)
-          if (nextdata.status == 'success') {
-            resolve(nextdata)
-          } else if (nextdata.status == 'login') {
-            this.$showFailMsg(false, optionData.$fail, nextdata.msg, 'error')
-            reject(nextdata)
-          } else if (nextdata.status == 'fail') {
-            this.$showFailMsg(false, optionData.$fail, nextdata.msg, 'error')
-            reject(nextdata)
+        if ((optionData.$responseFormat === undefined || optionData.$responseFormat) && (!optionData.responseType || optionData.responseType == 'json')) {
+          const responseData = check.ruleItem.formatResponse(response, optionData)
+          if (responseData.status == 'success') {
+            resolve(responseData)
+          } else if (responseData.status == 'login') {
+            this.$showFailMsg(false, optionData.$fail, responseData.msg, 'error')
+            // 此处考虑登录的自动或打断实现方案
+            reject(responseData)
+          } else if (responseData.status == 'fail') {
+            this.$showFailMsg(false, optionData.$fail, responseData.msg, 'error')
+            reject(responseData)
           }
         } else if (!optionData.$responseFormat) {
           resolve({
@@ -317,6 +325,68 @@ class Require extends Data {
       errRes.msg = config.Require.failMsg
     }
     return errRes
+  }
+  get (optionData: RequireOption) {
+    return this.require(optionData, { method: 'get' })
+  }
+  post (optionData: RequireOption) {
+    return this.require(optionData, { method: 'post' })
+  }
+  delete (optionData: RequireOption) {
+    return this.require(optionData, { method: 'delete' })
+  }
+  put (optionData: RequireOption) {
+    return this.require(optionData, { method: 'put' })
+  }
+  form (optionData: RequireOption) {
+    return this.require(optionData, { method: 'post', $dataType: 'form', $currentDataType: 'form' })
+  }
+  json (optionData: RequireOption) {
+    return this.require(optionData, { method: 'post', $dataType: 'form' })
+  }
+  setToken (tokenName: string, data: any, prop = 'default', noSave?: boolean) {
+    if (this.rule[prop]) {
+      this.rule[prop].setToken(tokenName, data, noSave)
+    } else {
+      this.$exportMsg(`未找到[${tokenName}:${prop}]对应的规则处理程序，setToken失败！`)
+    }
+  }
+  getToken (tokenName: string, prop = 'default') {
+    if (this.rule[prop]) {
+      return this.rule[prop].getToken(tokenName)
+    } else {
+      this.$exportMsg(`未找到[${tokenName}:${prop}]对应的规则处理程序，getToken失败！`)
+      return false
+    }
+  }
+  clearToken (tokenName: string, prop = 'default') {
+    if (this.rule[prop]) {
+      return this.rule[prop].clearToken(tokenName)
+    } else {
+      this.$exportMsg(`未找到[${tokenName}:${prop}]对应的规则处理程序，clearToken失败！`)
+      return false
+    }
+  }
+  /**
+   * 删除token
+   * @param {string} tokenName token名称
+   * @param {string} prop 对应的rule.prop
+   * @returns {boolean}
+   */
+  destroyToken (tokenName: string, prop = 'default') {
+    if (this.rule[prop]) {
+      return this.rule[prop].destroyToken(tokenName)
+    } else {
+      this.$exportMsg(`未找到[${tokenName}:${prop}]对应的规则处理程序，destroyToken失败！`)
+      return false
+    }
+  }
+  $selfName () {
+    const ruleName = []
+    for (const n in this.rule) {
+      ruleName.push(this.rule[n].$selfName())
+    }
+    return `(require:[${ruleName.join(',')}])`
   }
 
 }
