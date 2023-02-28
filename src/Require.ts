@@ -25,11 +25,12 @@ interface customParameters {
   $fail?: boolean | failType
 }
 
-interface RequireOption<D = any> extends AxiosRequestConfig<D>, customParameters {
-  url: string
+export interface RequireOption<D = any> extends AxiosRequestConfig<D>, customParameters {
+  url: string,
+  token?: string | string[]
 }
 
-interface IsFormatRequireOption<D = any> extends RequireOption {
+export interface IsFormatRequireOption<D = any> extends RequireOption {
   headers: AxiosRequestHeaders,
   data: D,
   params: any
@@ -154,7 +155,7 @@ class Require extends Data {
   }
   $checkRule (url: string): RequireRule {
     for (const n in this.rule) {
-      const fg = this.rule[n].check(url)
+      const fg = this.rule[n].checkUrl(url)
       if (fg) {
         return this.rule[n]
       }
@@ -196,19 +197,19 @@ class Require extends Data {
         optionData.$responseFormat = defaultOptionData.$responseFormat === undefined ? true : defaultOptionData.$responseFormat
       }
       // RequireRule检查
-      const ruleCheck = ruleItem.format(optionData)
+      const ruleCheck = ruleItem.formatRequire(optionData as IsFormatRequireOption)
       if (ruleCheck && !ruleCheck.next) {
         check.next = false
         check.code = ruleCheck.code
         check.msg = ruleCheck.msg
-        ruleItem.tokenFail(ruleCheck.prop)
+        ruleItem.$tokenFail(ruleCheck.prop)
       } else {
         check.ruleItem = ruleItem
       }
     }
     return check
   }
-  $showFailMsg (checkFail: boolean, failOption: customParameters['$fail'], content: string, type: noticeMsgType, title?: string) {
+  $showFailMsg (checkFail: boolean, failOption: customParameters['$fail'], content: string | undefined, type: noticeMsgType, title?: string) {
     if (failOption === undefined || failOption === true) {
       failOption = {}
     } else if (!failOption) {
@@ -243,14 +244,6 @@ class Require extends Data {
       } else if (optionData.$dataType == 'json') {
         optionData.data = JSON.stringify(optionData.data)
       }
-      // 新版本单独处理此逻辑
-      if (optionData.params) {
-        for (const n in optionData.params) {
-          if (isArray(optionData.params[n])) {
-            optionData.params[n] = optionData.params[n].join(',')
-          }
-        }
-      }
       return this.$requireNext(optionData as IsFormatRequireOption, check as successCheckType)
     } else {
       this.$showFailMsg(true, optionData.$fail, check.msg, 'error')
@@ -261,7 +254,7 @@ class Require extends Data {
     return new Promise((resolve, reject) => {
       this.ajax(optionData).then(response => {
         if (optionData.$responseFormat && (!optionData.responseType || optionData.responseType == 'json')) {
-          const nextdata = check.ruleItem.check(response, optionData)
+          const nextdata = check.ruleItem.formatResponse(response, optionData)
           if (nextdata.status == 'success') {
             resolve(nextdata)
           } else if (nextdata.status == 'login') {
@@ -309,7 +302,7 @@ class Require extends Data {
     }
     if (error.response) {
       errRes.code = 'server error'
-      let msg = ruleItem.requireFail(errRes)
+      let msg = ruleItem.$requireFail(errRes)
       if (!msg) {
         msg = this.$parseStatus(error.response.status)
         if (!msg) {
