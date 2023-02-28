@@ -50,7 +50,7 @@ class TokenRule extends Data {
     }
   }
   $getProp(parentProp: string) {
-    return `${parentProp || ''}-${this.prop}`
+    return `${parentProp}-${this.prop}`
   }
   setData(parentProp: string, data: any, noSave?: boolean) {
     this.data = data

@@ -1,6 +1,6 @@
 {
   "name": "complex-require",
-  "version": "3.0.1-beta.0",
+  "version": "3.0.1-beta.1",
   "description": "a complex require",
   "main": "index.ts",
   "repository": {

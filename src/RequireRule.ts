@@ -31,7 +31,7 @@ export interface responseType {
 type checkUrlType = (url: string) => boolean
 type formatUrlType = (url: string) => string
 type formatResponseType = (response: any, optionData?: any) => responseType
-type requireFailType = (errRes: any) => any
+type requireFailType = (errRes: any) => string
 
 export type initOptionType = {
   name: string,

@@ -25,7 +25,6 @@ interface customParameters {
   $fail?: boolean | failType // 错误回调
 }
 
-
 export interface RequireOption<D = any> extends AxiosRequestConfig<D>, customParameters {
   url: string,
   token?: string | string[]
@@ -40,6 +39,7 @@ export interface IsFormatRequireOption<D = any> extends RequireOption {
 interface defaultRequireOption extends customParameters {
   method?: RequireOption['method']
 }
+
 interface checkType {
   next: boolean,
   code: string,
@@ -47,10 +47,7 @@ interface checkType {
   ruleItem?: RequireRule
 }
 
-interface successCheckType {
-  next: boolean,
-  code: string,
-  msg: string,
+interface successCheckType extends checkType {
   ruleItem: RequireRule
 }
 
@@ -58,7 +55,7 @@ type requireErrResType = {
   status: string,
   code: string,
   msg: string,
-  optionData: any,
+  optionData: IsFormatRequireOption,
   error: any
 }
 
@@ -95,23 +92,23 @@ class Require extends Data {
       }
     }
     this.rule = {}
-    let firstProp
+    let defaultProp
     for (const n in initOption.rule) {
       const ruleOption = initOption.rule[n]
       this.rule[ruleOption.prop] = new RequireRule(ruleOption)
-      if (firstProp === undefined) {
-        firstProp = ruleOption.prop
+      if (defaultProp === undefined) {
+        defaultProp = ruleOption.prop
       }
     }
-    if (firstProp !== undefined) {
+    if (defaultProp !== undefined) {
       if (!this.rule.default) {
-        this.rule.default = this.rule[firstProp]
+        this.rule.default = this.rule[defaultProp]
       }
       if (getEnv('real') == 'development' && config.Require.devShowRule) {
-        this.$exportMsg(`默认的请求规则处理程序为[${this.rule.default.$selfName()}]`, 'log')
+        this.$exportMsg(`默认的请求处理规则为[${this.rule.default.$selfName()}]`, 'log')
       }
     } else {
-      this.$exportMsg(`未传递请求规则！`, 'error')
+      this.$exportMsg(`未传递请求处理规则！`, 'error')
     }
   }
   /**
@@ -162,10 +159,9 @@ class Require extends Data {
     }
   }
   $getRule (url: string): RequireRule {
-    for (const n in this.rule) {
-      const fg = this.rule[n].checkUrl(url)
-      if (fg) {
-        return this.rule[n]
+    for (const prop in this.rule) {
+      if (this.rule[prop].checkUrl(url)) {
+        return this.rule[prop]
       }
     }
     return this.rule.default
@@ -180,7 +176,7 @@ class Require extends Data {
     if (getType(optionData, true) != 'object') {
       check.next = false
       check.code = 'undefined optionData'
-      check.msg = '未定义请求数据'
+      check.msg = '未定义请求数据！'
     } else {
       optionData.url = this.$formatUrl(optionData.url)
       // 检查RULE
@@ -297,9 +293,9 @@ class Require extends Data {
       })
     })
   }
-  $parseStatus (status?: number) {
-    if (status && this.status[status]) {
-      return this.status[status]
+  $parseStatus (statusNum?: number) {
+    if (statusNum && this.status[statusNum]) {
+      return this.status[statusNum]
     } else {
       return ''
     }
@@ -314,14 +310,14 @@ class Require extends Data {
     }
     if (error.response) {
       errRes.code = 'server error'
-      let msg = ruleItem.$requireFail(errRes)
-      if (!msg) {
-        msg = this.$parseStatus(error.response.status)
-        if (!msg) {
-          msg = config.Require.failMsg
-        }
-      }
       if (errRes.msg === undefined) {
+        let msg = ruleItem.$requireFail(errRes)
+        if (!msg) {
+          msg = this.$parseStatus(error.response.status)
+          if (!msg) {
+            msg = config.Require.failMsg
+          }
+        }
         errRes.msg = msg
       }
     } else {
@@ -352,14 +348,14 @@ class Require extends Data {
     if (this.rule[prop]) {
       this.rule[prop].setToken(tokenName, data, noSave)
     } else {
-      this.$exportMsg(`未找到[${tokenName}:${prop}]对应的规则处理程序，setToken失败！`)
+      this.$exportMsg(`未找到[${tokenName}:${prop}]对应的处理规则，setToken操作失败！`)
     }
   }
   getToken (tokenName: string, prop = 'default') {
     if (this.rule[prop]) {
       return this.rule[prop].getToken(tokenName)
     } else {
-      this.$exportMsg(`未找到[${tokenName}:${prop}]对应的规则处理程序，getToken失败！`)
+      this.$exportMsg(`未找到[${tokenName}:${prop}]对应的处理规则，getToken操作失败！`)
       return false
     }
   }
@@ -367,7 +363,7 @@ class Require extends Data {
     if (this.rule[prop]) {
       return this.rule[prop].clearToken(tokenName)
     } else {
-      this.$exportMsg(`未找到[${tokenName}:${prop}]对应的规则处理程序，clearToken失败！`)
+      this.$exportMsg(`未找到[${tokenName}:${prop}]对应的处理规则，clearToken操作失败！`)
       return false
     }
   }
@@ -381,7 +377,7 @@ class Require extends Data {
     if (this.rule[prop]) {
       return this.rule[prop].destroyToken(tokenName)
     } else {
-      this.$exportMsg(`未找到[${tokenName}:${prop}]对应的规则处理程序，destroyToken失败！`)
+      this.$exportMsg(`未找到[${tokenName}:${prop}]对应的处理规则，destroyToken操作失败！`)
       return false
     }
   }
