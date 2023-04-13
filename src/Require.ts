@@ -388,7 +388,6 @@ class Require extends Data {
     }
     return `(require:[${ruleName.join(',')}])`
   }
-
 }
 
 export default Require
