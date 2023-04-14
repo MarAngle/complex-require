@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosRequestHeaders } from 'axios'
-import { notice } from 'complex-func'
-import { noticeMsgType } from 'complex-func/src/notice'
+import { notice } from 'complex-plugin'
+import { noticeMsgType } from 'complex-plugin/src/notice'
 import { Data } from 'complex-utils'
 import { getType, jsonToForm, getEnv } from 'complex-utils'
 import config from '../config'
