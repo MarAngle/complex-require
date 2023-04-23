@@ -67,6 +67,8 @@ export type initOptionType = {
   rule: RequireRuleInitOptionType[]
 }
 
+export type RequireMethod = 'get' | 'post' | 'delete' | 'put' | 'patch' | 'purge' | 'form' | 'json'
+
 class Require extends Data {
   static $name = 'Require'
   service: AxiosInstance
@@ -337,6 +339,12 @@ class Require extends Data {
   }
   put (optionData: RequireOption) {
     return this.require(optionData, { method: 'put' })
+  }
+  patch (optionData: RequireOption) {
+    return this.require(optionData, { method: 'patch' })
+  }
+  purge (optionData: RequireOption) {
+    return this.require(optionData, { method: 'purge' })
   }
   form (optionData: RequireOption) {
     return this.require(optionData, { method: 'post', $dataType: 'form', $currentDataType: 'form' })

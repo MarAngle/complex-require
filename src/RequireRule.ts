@@ -21,9 +21,9 @@ type formatTokenType = {
   data: tokenDataType
 }
 
-export interface responseType {
+export interface responseType<D = any> {
   status: 'success' | 'fail' | 'login',
-  data?: any,
+  data: D,
   msg?: string,
   code?: number | string
 }
