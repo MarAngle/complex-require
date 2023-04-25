@@ -147,7 +147,7 @@ class RequireRule extends Data {
     return check
   }
   setToken (tokenName: string, data: any, noSave?: boolean) {
-    if (!this.token.data[tokenName]) {
+    if (this.token.data[tokenName]) {
       this.token.data[tokenName].setData(this.prop, data, noSave)
     } else {
       this.$exportMsg(`未找到${tokenName}对应的token规则,setToken失败！`, 'error')
