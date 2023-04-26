@@ -1,11 +1,11 @@
 import { appendProp, Data } from 'complex-utils'
 import config from '../config'
-import { IsFormatRequireOption } from './Require'
+import { checkType, IsFormatRequireOption } from './Require'
 import TokenRule, { initOptionType as TokenRuleInitOptionType } from './TokenRule'
 
 type tokenType = {
   check?: boolean,
-  fail?: (tokenName: string, target: RequireRule) => any,
+  fail?: ((tokenName: string, check: checkType, target: RequireRule) => any),
   data?: {
     [prop: string]: TokenRuleInitOptionType
   }
@@ -17,7 +17,7 @@ type tokenDataType = {
 
 type formatTokenType = {
   check: boolean,
-  fail: false | ((tokenName: string, target: RequireRule) => any),
+  fail: false | ((tokenName: string, check: checkType, target: RequireRule) => any),
   data: tokenDataType
 }
 
@@ -201,9 +201,9 @@ class RequireRule extends Data {
       delete this.token.data[tokenName]
     }
   }
-  $tokenFail (tokenName: string) {
+  $tokenFail (tokenName: string, check: checkType) {
     if (this.token.fail) {
-      this.token.fail(tokenName, this)
+      this.token.fail(tokenName, check, this)
     }
   }
   $requireFail (errRes: any) {

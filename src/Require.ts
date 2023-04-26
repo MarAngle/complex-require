@@ -40,7 +40,7 @@ interface defaultRequireOption extends customParameters {
   method?: RequireOption['method']
 }
 
-interface checkType {
+export interface checkType {
   next: boolean,
   code: string,
   msg: string,
@@ -211,7 +211,7 @@ class Require extends Data {
         check.next = false
         check.code = ruleCheck.code
         check.msg = ruleCheck.msg
-        ruleItem.$tokenFail(ruleCheck.prop)
+        ruleItem.$tokenFail(ruleCheck.prop, check)
       } else {
         check.ruleItem = ruleItem
       }
