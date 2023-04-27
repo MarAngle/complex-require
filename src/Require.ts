@@ -3,8 +3,8 @@ import { notice } from 'complex-plugin'
 import { noticeMsgType } from 'complex-plugin/src/notice'
 import { Data } from 'complex-utils'
 import { getType, jsonToForm, getEnv } from 'complex-utils'
-import config from '../config'
 import RequireRule, { initOptionType as RequireRuleInitOptionType } from './RequireRule'
+import config from '../config'
 
 type statusType = {
   [prop: number]: string
@@ -27,7 +27,7 @@ interface customParameters {
 
 export interface RequireOption<D = any> extends AxiosRequestConfig<D>, customParameters {
   url: string,
-  token?: string | string[]
+  token?: false | string | string[]
 }
 
 export interface IsFormatRequireOption<D = any> extends RequireOption {
@@ -118,7 +118,7 @@ class Require extends Data {
    * @param {*} option
    * @returns {axios}
    */
-  $buildService(option?:AxiosRequestConfig) {
+  $buildService(option?: AxiosRequestConfig) {
     return axios.create(this.$buildOption(option))
   }
   /**

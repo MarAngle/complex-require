@@ -1,7 +1,7 @@
 import { appendProp, Data } from 'complex-utils'
-import config from '../config'
 import { checkType, IsFormatRequireOption } from './Require'
 import TokenRule, { initOptionType as TokenRuleInitOptionType } from './TokenRule'
+import config from '../config'
 
 type tokenType = {
   check?: boolean,
