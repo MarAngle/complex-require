@@ -1,6 +1,6 @@
 {
   "name": "complex-require",
-  "version": "3.1.7",
+  "version": "3.1.8",
   "description": "a complex require",
   "main": "index.ts",
   "repository": {
@@ -8,7 +8,7 @@
     "url": "https://github.com/MarAngle/complex-require.git"
   },
   "dependencies": {
-    "complex-utils": "^1.0.9",
+    "complex-utils": "^1.0.10",
     "axios": "^1.3.4"
   },
   "devDependencies": {
