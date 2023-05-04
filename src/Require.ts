@@ -113,6 +113,9 @@ class Require extends Data {
       this.$exportMsg(`未传递请求处理规则！`, 'error')
     }
   }
+  changeBaseUrl(baseURL: string) {
+    this.baseURL = baseURL || ''
+  }
   /**
    * 构建service
    * @param {*} option
@@ -159,6 +162,9 @@ class Require extends Data {
       }
       return url
     }
+  }
+  getRule(ruleProp = 'default') {
+    return this.rule[ruleProp]
   }
   $getRule (url: string): RequireRule {
     for (const prop in this.rule) {
