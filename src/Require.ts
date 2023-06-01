@@ -395,6 +395,18 @@ class Require extends Data {
       return false
     }
   }
+  clearAllToken() {
+    for (const prop in this.rule) {
+      const ruleItem = this.rule[prop]
+      ruleItem.clearToken(true)
+    }
+  }
+  destroyAllToken() {
+    for (const prop in this.rule) {
+      const ruleItem = this.rule[prop]
+      ruleItem.destroyToken(true)
+    }
+  }
   $selfName () {
     const ruleName = []
     for (const n in this.rule) {
