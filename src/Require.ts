@@ -170,26 +170,30 @@ class Require extends Data {
       if (!isRefresh) {
         optionData.url = this.$formatUrl(optionData.url)
         // 添加默认值
-        if (optionData.method === undefined && defaultOptionData.method !== undefined) {
-          optionData.method = defaultOptionData.method
+        if (!optionData.method) {
+          optionData.method = defaultOptionData.method || 'get'
         }
         if (!optionData.headers) {
           optionData.headers = {}
         }
+        if (!optionData.$dataType) {
+          optionData.$dataType = defaultOptionData.$dataType || 'json'
+        }
+        if (!optionData.$currentDataType) {
+          optionData.$currentDataType = defaultOptionData.$currentDataType || 'json'
+        }
         if (!optionData.data) {
-          optionData.data = {}
+          if (optionData.$currentDataType === 'form') {
+            optionData.data = new FormData()
+          } else {
+            optionData.data = {}
+          }
         }
         if (!optionData.params) {
           optionData.params = {}
         }
-        if (!optionData.$dataType && defaultOptionData.$dataType) {
-          optionData.$dataType = defaultOptionData.$dataType
-        }
-        if (!optionData.$currentDataType && defaultOptionData.$currentDataType) {
-          optionData.$currentDataType = defaultOptionData.$currentDataType
-        }
-        if (optionData.$responseFormat === undefined && defaultOptionData.$responseFormat !== undefined) {
-          optionData.$responseFormat = defaultOptionData.$responseFormat
+        if (optionData.$responseFormat === undefined) {
+          optionData.$responseFormat = defaultOptionData.$responseFormat !== undefined ? defaultOptionData.$responseFormat : true
         }
       }
       // 检查RULE
@@ -245,37 +249,39 @@ class Require extends Data {
   $require (optionData: IsFormatRequireOption, ruleItem: RequireRule, isRefresh?: boolean) {
     return new Promise((resolve, reject) => {
       this.ajax(optionData).then(response => {
-        if ((optionData.$responseFormat === undefined || optionData.$responseFormat) && (!optionData.responseType || optionData.responseType == 'json')) {
-          const responseData = ruleItem.formatResponse(response, optionData)
-          if (responseData.status == 'success') {
-            resolve(responseData)
-          } else if (responseData.status == 'login') {
-            if (ruleItem.refreshLogin && !isRefresh) {
-              ruleItem.refreshLogin().then(() => {
-                optionData.$currentDataType = optionData.$dataType
-                this.require(optionData, {}, true).then(res => {
-                  resolve(res)
+        if (!optionData.responseType || optionData.responseType == 'json') {
+          if (optionData.$responseFormat) {
+            const responseData = ruleItem.formatResponse(response, optionData)
+            if (responseData.status == 'success') {
+              resolve(responseData)
+            } else if (responseData.status == 'login') {
+              if (ruleItem.refreshLogin && !isRefresh) {
+                ruleItem.refreshLogin().then(() => {
+                  optionData.$currentDataType = optionData.$dataType
+                  this.require(optionData, {}, true).then(res => {
+                    resolve(res)
+                  }).catch(err => {
+                    reject(err)
+                  })
                 }).catch(err => {
                   reject(err)
                 })
-              }).catch(err => {
-                reject(err)
-              })
-            } else {
+              } else {
+                this.$showFailMsg(false, optionData.$fail, responseData.msg, 'error')
+                // 此处考虑登录的自动或打断实现方案
+                reject(responseData)
+              }
+            } else if (responseData.status == 'fail') {
               this.$showFailMsg(false, optionData.$fail, responseData.msg, 'error')
-              // 此处考虑登录的自动或打断实现方案
               reject(responseData)
             }
-          } else if (responseData.status == 'fail') {
-            this.$showFailMsg(false, optionData.$fail, responseData.msg, 'error')
-            reject(responseData)
+          } else {
+            resolve({
+              status: 'success',
+              code: 'unFormat',
+              data: response
+            })
           }
-        } else if (!optionData.$responseFormat) {
-          resolve({
-            status: 'success',
-            code: 'unFormat',
-            data: response
-          })
         } else {
           resolve({
             status: 'success',
