@@ -115,10 +115,11 @@ class RequireRule extends Data {
   appendTokenByList(tokenList: string[], index: number, optionData: IsFormatRequireOption, isRefreshLogin?: boolean): Promise<{ status: string, code: string, data: RequireRule }> {
     return new Promise((resolve, reject) => {
       this.$appendToken(optionData, tokenList[index], false, isRefreshLogin).then(() => {
+        index = index + 1
         if (index >= tokenList!.length) {
           resolve({ status: 'success', code: 'success', data: this })
         } else {
-          this.appendTokenByList(tokenList, index + 1, optionData, isRefreshLogin).then(res => {
+          this.appendTokenByList(tokenList, index, optionData, isRefreshLogin).then(res => {
             resolve(res)
           }).catch(err => {
             reject(err)
