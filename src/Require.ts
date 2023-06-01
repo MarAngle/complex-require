@@ -27,7 +27,7 @@ interface customParameters {
 
 export interface RequireOption<D = any> extends AxiosRequestConfig<D>, customParameters {
   url: string,
-  token?: false | string | string[]
+  token?: boolean | string[]
 }
 
 export interface IsFormatRequireOption<D = any> extends RequireOption {
@@ -38,17 +38,6 @@ export interface IsFormatRequireOption<D = any> extends RequireOption {
 
 interface defaultRequireOption extends customParameters {
   method?: RequireOption['method']
-}
-
-export interface checkType {
-  next: boolean,
-  code: string,
-  msg: string,
-  ruleItem?: RequireRule
-}
-
-interface successCheckType extends checkType {
-  ruleItem: RequireRule
 }
 
 type requireErrResType = {
@@ -174,55 +163,38 @@ class Require extends Data {
     }
     return this.rule.default
   }
-  $check (optionData: RequireOption, defaultOptionData: defaultRequireOption = {}) {
-    const check: checkType = {
-      next: true,
-      code: '',
-      msg: ''
-    }
-    // 检查参数
+  $formatOptionData(optionData: RequireOption, defaultOptionData: defaultRequireOption = {}, isRefresh?: boolean) {
     if (getType(optionData, true) != 'object') {
-      check.next = false
-      check.code = 'undefined optionData'
-      check.msg = '未定义请求数据！'
+      return Promise.reject({ status: 'fail', code: 'undefined optionData', msg: '未定义请求数据！' })
     } else {
-      optionData.url = this.$formatUrl(optionData.url)
+      if (!isRefresh) {
+        optionData.url = this.$formatUrl(optionData.url)
+        // 添加默认值
+        if (optionData.method === undefined && defaultOptionData.method !== undefined) {
+          optionData.method = defaultOptionData.method
+        }
+        if (!optionData.headers) {
+          optionData.headers = {}
+        }
+        if (!optionData.data) {
+          optionData.data = {}
+        }
+        if (!optionData.params) {
+          optionData.params = {}
+        }
+        if (!optionData.$dataType && defaultOptionData.$dataType) {
+          optionData.$dataType = defaultOptionData.$dataType
+        }
+        if (!optionData.$currentDataType && defaultOptionData.$currentDataType) {
+          optionData.$currentDataType = defaultOptionData.$currentDataType
+        }
+        if (optionData.$responseFormat === undefined && defaultOptionData.$responseFormat !== undefined) {
+          optionData.$responseFormat = defaultOptionData.$responseFormat
+        }
+      }
       // 检查RULE
-      const ruleItem = this.$getRule(optionData.url)
-      // 添加默认值
-      if (optionData.method === undefined && defaultOptionData.method !== undefined) {
-        optionData.method = defaultOptionData.method
-      }
-      if (!optionData.headers) {
-        optionData.headers = {}
-      }
-      if (!optionData.data) {
-        optionData.data = {}
-      }
-      if (!optionData.params) {
-        optionData.params = {}
-      }
-      if (!optionData.$dataType && defaultOptionData.$dataType) {
-        optionData.$dataType = defaultOptionData.$dataType
-      }
-      if (!optionData.$currentDataType && defaultOptionData.$currentDataType) {
-        optionData.$currentDataType = defaultOptionData.$currentDataType
-      }
-      if (optionData.$responseFormat === undefined && defaultOptionData.$responseFormat !== undefined) {
-        optionData.$responseFormat = defaultOptionData.$responseFormat
-      }
-      // RequireRule检查
-      const ruleCheck = ruleItem.formatRequire(optionData as IsFormatRequireOption)
-      if (ruleCheck && !ruleCheck.next) {
-        check.next = false
-        check.code = ruleCheck.code
-        check.msg = ruleCheck.msg
-        ruleItem.$tokenFail(ruleCheck.prop, check)
-      } else {
-        check.ruleItem = ruleItem
-      }
+      return this.$getRule(optionData.url).formatRequire(optionData as IsFormatRequireOption, isRefresh)
     }
-    return check
   }
   $showFailMsg (checkFail: boolean, failOption: customParameters['$fail'], content: string | undefined, type: noticeMsgType, title?: string) {
     if (failOption === undefined || failOption === true) {
@@ -246,36 +218,54 @@ class Require extends Data {
       notice.showMsg(content, type, title, duration)
     }
   }
-  require (optionData: RequireOption, defaultOptionData?: defaultRequireOption) {
-    const check = this.$check(optionData, defaultOptionData)
-    if (check.next) {
-      if (optionData.$dataType == 'form') {
-        if ((optionData as IsFormatRequireOption).headers['Content-Type'] === undefined) {
-          (optionData as IsFormatRequireOption).headers['Content-Type'] = config.Require.formContentType
+  require (optionData: RequireOption, defaultOptionData?: defaultRequireOption, isRefresh?: boolean) {
+    return new Promise((resolve, reject) => {
+      this.$formatOptionData(optionData, defaultOptionData, isRefresh).then(res => {
+        if (optionData.$dataType == 'form') {
+          if ((optionData as IsFormatRequireOption).headers['Content-Type'] === undefined) {
+            (optionData as IsFormatRequireOption).headers['Content-Type'] = config.Require.formContentType
+          }
+          if (optionData.$currentDataType == 'json') {
+            optionData.data = jsonToForm(optionData.data)
+          }
+        } else if (optionData.$dataType == 'json') {
+          optionData.data = JSON.stringify(optionData.data)
         }
-        if (optionData.$currentDataType == 'json') {
-          optionData.data = jsonToForm(optionData.data)
-        }
-      } else if (optionData.$dataType == 'json') {
-        optionData.data = JSON.stringify(optionData.data)
-      }
-      return this.$require(optionData as IsFormatRequireOption, check as successCheckType)
-    } else {
-      this.$showFailMsg(true, optionData.$fail, check.msg, 'error')
-      return Promise.reject({ status: 'fail', ...check })
-    }
+        this.$require(optionData as IsFormatRequireOption, res.data, isRefresh).then(res => {
+          resolve(res)
+        }).catch(err => {
+          reject(err)
+        })
+      }).catch(err => {
+        this.$showFailMsg(true, optionData.$fail, err.msg, 'error')
+        reject(err)
+      })
+    })
   }
-  $require (optionData: IsFormatRequireOption, check: successCheckType) {
+  $require (optionData: IsFormatRequireOption, ruleItem: RequireRule, isRefresh?: boolean) {
     return new Promise((resolve, reject) => {
       this.ajax(optionData).then(response => {
         if ((optionData.$responseFormat === undefined || optionData.$responseFormat) && (!optionData.responseType || optionData.responseType == 'json')) {
-          const responseData = check.ruleItem.formatResponse(response, optionData)
+          const responseData = ruleItem.formatResponse(response, optionData)
           if (responseData.status == 'success') {
             resolve(responseData)
           } else if (responseData.status == 'login') {
-            this.$showFailMsg(false, optionData.$fail, responseData.msg, 'error')
-            // 此处考虑登录的自动或打断实现方案
-            reject(responseData)
+            if (ruleItem.refreshLogin && !isRefresh) {
+              ruleItem.refreshLogin().then(() => {
+                optionData.$currentDataType = optionData.$dataType
+                this.require(optionData, {}, true).then(res => {
+                  resolve(res)
+                }).catch(err => {
+                  reject(err)
+                })
+              }).catch(err => {
+                reject(err)
+              })
+            } else {
+              this.$showFailMsg(false, optionData.$fail, responseData.msg, 'error')
+              // 此处考虑登录的自动或打断实现方案
+              reject(responseData)
+            }
           } else if (responseData.status == 'fail') {
             this.$showFailMsg(false, optionData.$fail, responseData.msg, 'error')
             reject(responseData)
@@ -295,7 +285,7 @@ class Require extends Data {
         }
       }, error => {
         console.error(error)
-        const errRes = this.$requireFail(error, optionData, check.ruleItem)
+        const errRes = this.$requireFail(error, optionData, ruleItem)
         this.$showFailMsg(true, optionData.$fail, errRes.msg, 'error', '警告')
         reject(errRes)
       })

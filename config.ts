@@ -6,7 +6,7 @@ const config = {
     formContentType: 'multipart/form-data'
   },
   RequireRule: {
-    defaultTokenName: 'default'
+    // defaultTokenName: 'default'
   },
   TokenRule: {
     location: 'body'
