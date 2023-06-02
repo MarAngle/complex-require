@@ -1,4 +1,4 @@
-import { isExist, setLocalData, getLocalData, removeLocalData, Data } from 'complex-utils'
+import { isExist, setLocalData, getLocalData, removeLocalData, setSessionLocalData, getSessionLocalData, removeSessionLocalData, Data } from 'complex-utils'
 import config from '../config'
 
 type getDataType = () => any
@@ -11,6 +11,8 @@ type initOptionObject = {
   require?: boolean
   location?: string
   empty?: boolean
+  time?: number
+  session?: boolean
   getData?: getDataType
   checkData?: checkDataType
   clearData?: clearDataType
@@ -26,6 +28,8 @@ class TokenRule extends Data {
   data: any
   location: string
   empty: boolean
+  time?: number
+  session?: boolean
   $getData: false | getDataType
   $checkData: checkDataType
   $clearData: false | clearDataType
@@ -42,6 +46,8 @@ class TokenRule extends Data {
     this.data = initOption.data || undefined
     this.location = initOption.location || config.TokenRule.location
     this.empty = initOption.empty === undefined ? false : initOption.empty
+    this.session = initOption.session
+    this.time = initOption.time
     this.$getData = initOption.getData || false
     this.$clearData = initOption.clearData || false
     this.$destroyData = initOption.destroyData || false
@@ -55,13 +61,13 @@ class TokenRule extends Data {
   setData(parentProp: string, data: any, noSave?: boolean) {
     this.data = data
     if (!noSave) {
-      setLocalData(this.$getProp(parentProp), data)
+      (!this.session ? setLocalData: setSessionLocalData)(this.$getProp(parentProp), data)
     }
   }
   getData(parentProp: string) {
     let data = this.$getData ? this.$getData() : this.data
     if (!this.$checkData(data)) {
-      data = getLocalData(this.$getProp(parentProp))
+      data = (!this.session ? getLocalData : getSessionLocalData)(this.$getProp(parentProp), this.time)
       if (this.$checkData(data)) {
         this.setData(parentProp, data, true)
       }
@@ -83,7 +89,7 @@ class TokenRule extends Data {
     return next
   }
   $removeData(parentProp: string) {
-    removeLocalData(this.$getProp(parentProp))
+    (!this.session ? removeLocalData : removeSessionLocalData)(this.$getProp(parentProp))
     this.data = undefined
   }
   clearData(parentProp: string) {
