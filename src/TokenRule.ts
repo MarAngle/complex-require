@@ -28,13 +28,13 @@ class TokenRule extends Data {
   data: any
   location: string
   empty: boolean
-  time?: number
-  session?: boolean
+  time: undefined | number
+  session: undefined | boolean
   $getData: false | getDataType
   $checkData: checkDataType
   $clearData: false | clearDataType
   $destroyData: false | destroyDataType
-  constructor(prop: string, initOption: initOptionType) {
+  constructor(prop: string, initOption: initOptionType, time?: number, session?: boolean) {
     super()
     if (typeof initOption !== 'object') {
       initOption = {
@@ -46,8 +46,8 @@ class TokenRule extends Data {
     this.data = initOption.data || undefined
     this.location = initOption.location || config.TokenRule.location
     this.empty = initOption.empty === undefined ? false : initOption.empty
-    this.session = initOption.session
-    this.time = initOption.time
+    this.time = initOption.time === undefined ? time : initOption.time
+    this.session = initOption.session === undefined ? session : initOption.session
     this.$getData = initOption.getData || false
     this.$clearData = initOption.clearData || false
     this.$destroyData = initOption.destroyData || false

@@ -4,6 +4,8 @@ import TokenRule, { initOptionType as TokenRuleInitOptionType } from './TokenRul
 
 type tokenType = {
   check?: boolean
+  time?: number
+  session?: boolean
   data?: {
     [prop: string]: TokenRuleInitOptionType
   }
@@ -72,7 +74,7 @@ class RequireRule extends Data {
     const tokenData: tokenDataType = {}
     if (token.data) {
       for (const n in token.data) {
-        tokenData[n] = new TokenRule(n, token.data[n])
+        tokenData[n] = new TokenRule(n, token.data[n], token.time, token.session)
       }
     }
     this.token = {
