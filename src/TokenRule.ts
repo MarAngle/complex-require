@@ -7,14 +7,14 @@ type clearDataType = (parentProp: string) => any
 type destroyDataType = clearDataType
 
 type initOptionObject = {
-  data?: any,
-  require?: boolean,
-  location?: string,
-  empty?: boolean,
-  getData?: getDataType,
-  checkData?: checkDataType,
-  clearData?: clearDataType,
-  destroyData?: destroyDataType,
+  data?: any
+  require?: boolean
+  location?: string
+  empty?: boolean
+  getData?: getDataType
+  checkData?: checkDataType
+  clearData?: clearDataType
+  destroyData?: destroyDataType
 }
 
 export type initOptionType = string | initOptionObject

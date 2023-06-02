@@ -3,7 +3,7 @@ import { IsFormatRequireOption } from './Require'
 import TokenRule, { initOptionType as TokenRuleInitOptionType } from './TokenRule'
 
 type tokenType = {
-  check?: boolean,
+  check?: boolean
   data?: {
     [prop: string]: TokenRuleInitOptionType
   }
@@ -14,14 +14,14 @@ type tokenDataType = {
 }
 
 type formatTokenType = {
-  check: boolean,
+  check: boolean
   data: tokenDataType
 }
 
 export interface responseType<D = any> {
-  status: 'success' | 'fail' | 'login',
-  data: D,
-  msg?: string,
+  status: 'success' | 'fail' | 'login'
+  data: D
+  msg?: string
   code?: number | string
 }
 

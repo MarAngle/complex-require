@@ -11,10 +11,10 @@ type statusType = {
 }
 
 type failType = {
-  check?: boolean,
-  content?: string,
-  duration?: number,
-  type?: noticeMsgType,
+  check?: boolean
+  content?: string
+  duration?: number
+  type?: noticeMsgType
   title?: string
 }
 
@@ -26,13 +26,13 @@ interface customParameters {
 }
 
 export interface RequireOption<D = any> extends AxiosRequestConfig<D>, customParameters {
-  url: string,
+  url: string
   token?: boolean | string[]
 }
 
 export interface IsFormatRequireOption<D = any> extends RequireOption {
-  headers: AxiosRequestHeaders,
-  data: D,
+  headers: AxiosRequestHeaders
+  data: D
   params: any
 }
 
@@ -41,18 +41,18 @@ interface defaultRequireOption extends customParameters {
 }
 
 type requireErrResType = {
-  status: string,
-  code: string,
-  msg: string,
-  optionData: IsFormatRequireOption,
+  status: string
+  code: string
+  msg: string
+  optionData: IsFormatRequireOption
   error: any
 }
 
 export type initOptionType = {
   baseURL?: string
   option?: AxiosRequestConfig
-  status?: statusType,
-  formatUrl?: (url: string, baseURL: string) => string,
+  status?: statusType
+  formatUrl?: (url: string, baseURL: string) => string
   rule: RequireRuleInitOptionType[]
 }
 
