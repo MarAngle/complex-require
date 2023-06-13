@@ -60,6 +60,7 @@ class Require extends Data {
     this.status = {
       403: '拒绝访问!',
       404: '很抱歉，资源未找到!',
+      405: '请求方法不支持!',
       504: '网络超时!'
     }
     if (initOption.status) {
@@ -83,7 +84,7 @@ class Require extends Data {
         this.$exportMsg(`默认的请求处理规则为[${this.rule.default!.$selfName()}]`, 'log')
       }
     } else {
-      this.$exportMsg(`未传递请求处理规则！`, 'error')
+      this.$exportMsg(`未获取到默认请求处理规则！`, 'error')
     }
   }
   getFormatURL(formatURL?: formatURLType) {
@@ -259,6 +260,86 @@ class Require extends Data {
       errRes.msg = config.Require.fail.require
     }
     return errRes
+  }
+  get (optionData: requireOptionType) {
+    return this.require(optionData, { method: 'get' })
+  }
+  post (optionData: requireOptionType) {
+    return this.require(optionData, { method: 'post' })
+  }
+  delete (optionData: requireOptionType) {
+    return this.require(optionData, { method: 'delete' })
+  }
+  put (optionData: requireOptionType) {
+    return this.require(optionData, { method: 'put' })
+  }
+  patch (optionData: requireOptionType) {
+    return this.require(optionData, { method: 'patch' })
+  }
+  purge (optionData: requireOptionType) {
+    return this.require(optionData, { method: 'purge' })
+  }
+  form (optionData: requireOptionType) {
+    return this.require(optionData, { method: 'post', $dataType: 'form', $currentDataType: 'form' })
+  }
+  json (optionData: requireOptionType) {
+    return this.require(optionData, { method: 'post', $dataType: 'form' })
+  }
+  setToken (tokenName: string, data: any, prop = 'default', noSave?: boolean) {
+    if (this.rule[prop]) {
+      this.rule[prop].setToken(tokenName, data, noSave)
+    } else {
+      this.$exportMsg(`未找到${prop}对应的处理规则，setToken:${tokenName}操作失败！`)
+    }
+  }
+  getToken (tokenName: string, prop = 'default') {
+    if (this.rule[prop]) {
+      return this.rule[prop].getToken(tokenName)
+    } else {
+      this.$exportMsg(`未找到${prop}对应的处理规则，getToken:${tokenName}操作失败！`)
+      return false
+    }
+  }
+  clearToken (tokenName: string | true, prop = 'default') {
+    if (this.rule[prop]) {
+      return this.rule[prop].clearToken(tokenName)
+    } else {
+      this.$exportMsg(`未找到${prop}对应的处理规则，clearToken:${tokenName}操作失败！`)
+      return false
+    }
+  }
+  /**
+   * 删除token
+   * @param {string} tokenName token名称
+   * @param {string} prop 对应的rule.prop
+   * @returns {boolean}
+   */
+  destroyToken (tokenName: string | true, prop = 'default') {
+    if (this.rule[prop]) {
+      return this.rule[prop].destroyToken(tokenName)
+    } else {
+      this.$exportMsg(`未找到${prop}对应的处理规则，destroyToken:${tokenName}操作失败！`)
+      return false
+    }
+  }
+  clearAllToken() {
+    for (const prop in this.rule) {
+      const ruleItem = this.rule[prop]
+      ruleItem.clearToken(true)
+    }
+  }
+  destroyAllToken() {
+    for (const prop in this.rule) {
+      const ruleItem = this.rule[prop]
+      ruleItem.destroyToken(true)
+    }
+  }
+  $selfName () {
+    const ruleName = []
+    for (const n in this.rule) {
+      ruleName.push(this.rule[n].$selfName())
+    }
+    return `(require:[${ruleName.join(',')}])`
   }
 }
 

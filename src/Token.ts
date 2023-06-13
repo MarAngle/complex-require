@@ -96,7 +96,6 @@ class Token {
   location: locationType
   empty: boolean
   time: undefined | number
-  session: undefined | boolean
   $getData?: getDataType
   $hasData: hasDataType
   $clearData?: clearDataType
@@ -116,18 +115,20 @@ class Token {
     this.location = initOption.location || 'body'
     this.empty = initOption.empty === undefined ? false : initOption.empty
     this.time = initOption.time === undefined ? time : initOption.time
-    this.session = initOption.session === undefined ? session : initOption.session
+    if (initOption.session !== undefined) {
+      session = initOption.session
+    }
     this.$clearData = initOption.clearData
     this.$destroyData = initOption.destroyData
     this.$hasData = initOption.hasData || hasData
-    this.setData = !this.session ? setData : setDataBySession
+    this.setData = !session ? setData : setDataBySession
     if (initOption.getData) {
       this.$getData = initOption.getData
-      this.getData = !this.session ? getData : getDataBySession
+      this.getData = !session ? getData : getDataBySession
     } else {
-      this.getData = !this.session ? getDataByData : getDataByDataBySession
+      this.getData = !session ? getDataByData : getDataByDataBySession
     }
-    this.removeData = !this.session ? removeData : removeDataBySession
+    this.removeData = !session ? removeData : removeDataBySession
   }
   hasData(data: any) {
     let hasStatus: 'exist' | 'empty' | '' = 'exist'

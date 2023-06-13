@@ -125,11 +125,11 @@ class Rule extends Data {
       })
     })
   }
-  getToken (tokenName: string): undefined | Token {
+  getTokenData (tokenName: string): undefined | Token {
     return this.token.data[tokenName]
   }
   $appendToken(instance: Instance, tokenName: string, isRefresh?: boolean): Promise<appendTokenStatus> {
-    const tokenItem = this.getToken(tokenName)
+    const tokenItem = this.getTokenData(tokenName)
     if (tokenItem) {
       const tokenData = tokenItem.getData()
       const next = tokenItem.hasData(tokenData)
@@ -161,6 +161,72 @@ class Rule extends Data {
     } else {
       return Promise.reject({ status: 'fail', code: 'empty token', msg: `Token:${tokenName}的值不存在` })
     }
+  }
+  setToken(tokenName: string, data: any, noSave?: boolean) {
+    if (this.token.data[tokenName]) {
+      this.token.data[tokenName].setData(data, noSave)
+    } else {
+      this.$exportMsg(`未找到${tokenName}对应的token规则,setToken失败！`, 'error')
+    }
+  }
+  getToken (tokenName: string) {
+    if (this.token.data[tokenName]) {
+      return this.token.data[tokenName].getData()
+    } else {
+      this.$exportMsg(`未找到${tokenName}对应的token规则,getToken失败！`, 'error')
+    }
+  }
+  clearToken(tokenName: true | string) {
+    if (tokenName) {
+      if (tokenName === true) {
+        for (const n in this.token.data) {
+          this.$clearToken(n)
+        }
+        return true
+      } else {
+        return this.$clearToken(tokenName)
+      }
+    } else {
+      this.$exportMsg(`未指定需要清除的token！`)
+      return false
+    }
+  }
+  $clearToken (tokenName: string) {
+    if (this.token.data[tokenName]) {
+      this.token.data[tokenName].clearData()
+      return true
+    } else {
+      this.$exportMsg(`未找到${tokenName}对应的token规则,clearToken失败！`, 'warn')
+      return false
+    }
+  }
+  destroyToken (tokenName: true | string) {
+    if (tokenName) {
+      if (tokenName === true) {
+        for (const n in this.token.data) {
+          this.$destroyToken(n)
+        }
+        return true
+      } else {
+        return this.$destroyToken(tokenName)
+      }
+    } else {
+      this.$exportMsg(`未指定需要销毁的token！`)
+      return false
+    }
+  }
+  $destroyToken (tokenName: string) {
+    if (this.token.data[tokenName]) {
+      this.token.data[tokenName].destroyData()
+      delete this.token.data[tokenName]
+      return true
+    } else {
+      this.$exportMsg(`未找到${tokenName}对应的token规则,destroyToken失败！`, 'warn')
+      return false
+    }
+  }
+  $selfName() {
+    return `(${super.$selfName()}:[${this.name}/${this.prop}])`
   }
 }
 
