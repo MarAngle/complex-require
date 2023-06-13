@@ -1,11 +1,11 @@
 import config from './config'
 import Require from './src/Require'
-import RequireRule from './src/RequireRule'
-import TokenRule from './src/TokenRule'
+import Rule from './src/Rule'
+import Token from './src/Token'
 
 export {
   config,
   Require,
-  RequireRule,
-  TokenRule
+  Rule,
+  Token
 }
