@@ -39,7 +39,6 @@ const defaultFormatUrlWithBaseUrl = function(this: Require, url: string) {
   }
   return url
 }
-
 const defaultFormatUrl = function(url: string) {
   return url
 }
@@ -59,12 +58,8 @@ class Require extends Data {
     this.baseUrl = initOption.baseUrl || ''
     this.formatUrl = this.getFormatUrl(initOption.formatUrl)
     this.status = {
-      ...config.require.status
-    }
-    if (initOption.status) {
-      for (const n in initOption.status) {
-        this.status[n] = initOption.status[n]
-      }
+      ...config.require.status,
+      ...initOption.status
     }
     this.rule = {}
     let defaultProp: undefined | string = undefined
@@ -107,7 +102,7 @@ class Require extends Data {
   getRule(prop = 'default') {
     return this.rule[prop]
   }
-  getRuleByUrl(url: string) {
+  checkRule(url: string) {
     for (const prop in this.rule) {
       if (this.rule[prop].checkUrl(url)) {
         return this.rule[prop]
@@ -158,8 +153,8 @@ class Require extends Data {
       return Promise.reject({ status: 'fail', code: 'undefined optionData', msg: '未定义请求数据！' })
     } else {
       this.$formatRequireOption(requireOption, defaultRequireOption)
-      const ruleItem = this.getRuleByUrl(requireOption.url)
-      return this.runInstance(new Instance(requireOption, this, ruleItem), ruleItem)
+      const ruleItem = this.checkRule(requireOption.url)
+      return this.runInstance(new Instance(requireOption, ruleItem), ruleItem)
     }
   }
   runInstance(instance: Instance, ruleItem: Rule, isRefresh?: boolean) {

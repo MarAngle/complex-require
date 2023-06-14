@@ -1,10 +1,9 @@
 import { AxiosRequestConfig } from 'axios'
+import { appendProp, jsonToForm } from 'complex-utils'
 import { notice } from 'complex-plugin'
 import { noticeMsgType } from 'complex-plugin/src/notice'
-import Require from './Require'
 import Rule from './Rule'
 import { locationType } from './Token'
-import { appendProp, jsonToForm } from 'complex-utils'
 import config from '../config'
 
 export type failType = {
@@ -29,9 +28,8 @@ export interface InstanceInitOption<D = any> extends AxiosRequestConfig<D>, cust
 
 class Instance {
   data: InstanceInitOption
-  require: Require
   rule: Rule
-  constructor(initOption: InstanceInitOption, require: Require, rule: Rule) {
+  constructor(initOption: InstanceInitOption, rule: Rule) {
     initOption.url = rule.formatUrl(initOption.url)
     if (initOption.token === undefined || initOption.token === true) {
       initOption.token = rule.getTokenList()
@@ -39,7 +37,6 @@ class Instance {
       initOption.token = []
     }
     this.data = initOption
-    this.require = require
     this.rule = rule
   }
   appendData(location: locationType, prop: string, data: any) {
@@ -112,13 +109,13 @@ class Instance {
     } else if (option.content) {
       content = option.content
     }
-    if (option.type) {
-      type = option.type
-    }
-    if (option.title) {
-      title = option.title
-    }
     if (content) {
+      if (option.type) {
+        type = option.type
+      }
+      if (option.title) {
+        title = option.title
+      }
       notice.showMsg(content, type, title, duration)
     }
   }

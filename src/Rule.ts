@@ -1,10 +1,9 @@
 import { Data } from 'complex-utils'
+import { errorType } from './Require'
 import Instance from './Instance'
 import Token, { TokenInitOption } from './Token'
-import { errorType } from './Require'
 
 export type tokenType = {
-  append?: boolean
   time?: number
   session?: boolean
   data?: Record<string, TokenInitOption>
@@ -42,10 +41,7 @@ export interface RuleInitOption {
   fail?: failType
 }
 
-export type formatTokenType = {
-  append: boolean
-  data: Record<string, Token>
-}
+export type formatTokenType = Record<string, Token>
 
 function defaultFormatUrl(url: string) {
   return url
@@ -77,33 +73,26 @@ class Rule extends Data {
         tokenData[tokenName] = new Token(token.data[tokenName], tokenName, this.prop, token.time, token.session)
       }
     }
-    this.token = {
-      append: token.append === undefined ? true : token.append,
-      data: tokenData
-    }
+    this.token = tokenData
     this.checkUrl = initOption.checkUrl
     this.format = initOption.format
     this.formatUrl = initOption.formatUrl || defaultFormatUrl
     this.fail = initOption.fail || defaultFail
   }
   getTokenList() {
-    return Object.keys(this.token.data)
+    return Object.keys(this.token)
   }
   formatRequireInstance(instance: Instance): Promise<appendTokenStatus> {
     return new Promise((resolve, reject) => {
-      if (this.token.append) {
-        const tokenList = instance.data.token as string[]
-        if (tokenList && tokenList.length > 0) {
-          this.appendToken(tokenList, 0, instance).then(res => {
-            resolve(res)
-          }).catch(err => {
-            reject(err)
-          })
-        } else {
-          resolve({ status: 'success', code: 'empty token list' })
-        }
+      const tokenList = instance.data.token as string[]
+      if (tokenList && tokenList.length > 0) {
+        this.appendToken(tokenList, 0, instance).then(res => {
+          resolve(res)
+        }).catch(err => {
+          reject(err)
+        })
       } else {
-        resolve({ status: 'success', code: 'no append' })
+        resolve({ status: 'success', code: 'empty token list' })
       }
     })
   }
@@ -126,7 +115,7 @@ class Rule extends Data {
     })
   }
   getTokenData (tokenName: string): undefined | Token {
-    return this.token.data[tokenName]
+    return this.token[tokenName]
   }
   $appendToken(instance: Instance, tokenName: string, isRefresh?: boolean): Promise<appendTokenStatus> {
     const tokenItem = this.getTokenData(tokenName)
@@ -163,15 +152,15 @@ class Rule extends Data {
     }
   }
   setToken(tokenName: string, data: any, noSave?: boolean) {
-    if (this.token.data[tokenName]) {
-      this.token.data[tokenName].setData(data, noSave)
+    if (this.token[tokenName]) {
+      this.token[tokenName].setData(data, noSave)
     } else {
       this.$exportMsg(`未找到${tokenName}对应的token规则,setToken失败！`, 'error')
     }
   }
   getToken (tokenName: string) {
-    if (this.token.data[tokenName]) {
-      return this.token.data[tokenName].getData()
+    if (this.token[tokenName]) {
+      return this.token[tokenName].getData()
     } else {
       this.$exportMsg(`未找到${tokenName}对应的token规则,getToken失败！`, 'error')
     }
@@ -179,7 +168,7 @@ class Rule extends Data {
   clearToken(tokenName: true | string) {
     if (tokenName) {
       if (tokenName === true) {
-        for (const n in this.token.data) {
+        for (const n in this.token) {
           this.$clearToken(n)
         }
         return true
@@ -192,8 +181,8 @@ class Rule extends Data {
     }
   }
   $clearToken (tokenName: string) {
-    if (this.token.data[tokenName]) {
-      this.token.data[tokenName].clearData()
+    if (this.token[tokenName]) {
+      this.token[tokenName].clearData()
       return true
     } else {
       this.$exportMsg(`未找到${tokenName}对应的token规则,clearToken失败！`, 'warn')
@@ -203,7 +192,7 @@ class Rule extends Data {
   destroyToken (tokenName: true | string) {
     if (tokenName) {
       if (tokenName === true) {
-        for (const n in this.token.data) {
+        for (const n in this.token) {
           this.$destroyToken(n)
         }
         return true
@@ -216,9 +205,9 @@ class Rule extends Data {
     }
   }
   $destroyToken (tokenName: string) {
-    if (this.token.data[tokenName]) {
-      this.token.data[tokenName].destroyData()
-      delete this.token.data[tokenName]
+    if (this.token[tokenName]) {
+      this.token[tokenName].destroyData()
+      delete this.token[tokenName]
       return true
     } else {
       this.$exportMsg(`未找到${tokenName}对应的token规则,destroyToken失败！`, 'warn')
