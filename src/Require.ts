@@ -1,13 +1,12 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios'
 import { Data, getType, getEnv  } from 'complex-utils'
 import Rule, { RuleInitOption } from './Rule'
-import config from '../config'
 import Instance, { InstanceInitOption, customParameters } from './Instance'
+import config from '../config'
 
 type statusType = {
   [prop: number]: string
 }
-
 
 export interface defaultRequireOptionType extends customParameters {
   method?: InstanceInitOption['method']
@@ -23,45 +22,44 @@ export type errorType = {
   error: any
 }
 
-export type formatURLType = (url: string) => string
+export type formatUrlType = (url: string) => string
 
 export type RequireInitOption = {
-  baseURL?: string
+  baseUrl?: string
   option?: AxiosRequestConfig
   status?: statusType
-  formatURL?: formatURLType
+  formatUrl?: formatUrlType
   rule: RuleInitOption[]
 }
 
-const defaultFormatURLWithBaseURL = function(this: Require, url: string) {
+const defaultFormatUrlWithBaseUrl = function(this: Require, url: string) {
   if (url.indexOf('https://') != 0 && url.indexOf('http://') != 0) {
     // 当前URL不以http/https开始，则认为此URL需要添加默认前缀
-    url = this.baseURL + url
+    url = this.baseUrl + url
   }
   return url
 }
 
-const defaultFormatURL = function(url: string) {
+const defaultFormatUrl = function(url: string) {
   return url
 }
+
+export type RequireMethod = 'get' | 'post' | 'delete' | 'put' | 'patch' | 'purge' | 'form' | 'json'
 
 class Require extends Data {
   static $name = 'Require'
   service: AxiosInstance
-  baseURL: string
+  baseUrl: string
   status: statusType
   rule: Record<string, Rule>
-  formatURL: formatURLType
+  formatUrl: formatUrlType
   constructor(initOption: RequireInitOption) {
     super()
     this.service = axios.create(initOption.option)
-    this.baseURL = initOption.baseURL || ''
-    this.formatURL = this.getFormatURL(initOption.formatURL)
+    this.baseUrl = initOption.baseUrl || ''
+    this.formatUrl = this.getFormatUrl(initOption.formatUrl)
     this.status = {
-      403: '拒绝访问!',
-      404: '很抱歉，资源未找到!',
-      405: '请求方法不支持!',
-      504: '网络超时!'
+      ...config.require.status
     }
     if (initOption.status) {
       for (const n in initOption.status) {
@@ -80,36 +78,36 @@ class Require extends Data {
       if (!this.rule.default) {
         this.rule.default = this.rule[defaultProp]
       }
-      if (getEnv('real') == 'development' && config.Require.devShowRule) {
+      if (getEnv('real') == 'development' && config.require.showRule) {
         this.$exportMsg(`默认的请求处理规则为[${this.rule.default!.$selfName()}]`, 'log')
       }
     } else {
       this.$exportMsg(`未获取到默认请求处理规则！`, 'error')
     }
   }
-  getFormatURL(formatURL?: formatURLType) {
-    if (formatURL) {
-      return formatURL
-    } else if (this.baseURL) {
-      return defaultFormatURLWithBaseURL
+  getFormatUrl(formatUrl?: formatUrlType) {
+    if (formatUrl) {
+      return formatUrl
+    } else if (this.baseUrl) {
+      return defaultFormatUrlWithBaseUrl
     } else {
-      return defaultFormatURL
+      return defaultFormatUrl
     }
   }
-  changeFormatURL() {
+  changeFormatUrl() {
     // 当前格式化URL函数为默认函数时则进行重新获取操作
-    if (this.formatURL === defaultFormatURLWithBaseURL || this.formatURL === defaultFormatURL) {
-      this.formatURL = this.getFormatURL()
+    if (this.formatUrl === defaultFormatUrlWithBaseUrl || this.formatUrl === defaultFormatUrl) {
+      this.formatUrl = this.getFormatUrl()
     }
   }
-  changeBaseURL(baseURL: string) {
-    this.baseURL = baseURL || ''
-    this.changeFormatURL()
+  changeBaseUrl(baseUrl: string) {
+    this.baseUrl = baseUrl || ''
+    this.changeFormatUrl()
   }
   getRule(prop = 'default') {
     return this.rule[prop]
   }
-  getRuleByURL(url: string) {
+  getRuleByUrl(url: string) {
     for (const prop in this.rule) {
       if (this.rule[prop].checkUrl(url)) {
         return this.rule[prop]
@@ -127,7 +125,7 @@ class Require extends Data {
     })
   }
   $formatRequireOption(requireOption: requireOptionType, defaultRequireOption: defaultRequireOptionType = {}) {
-    requireOption.url = this.formatURL(requireOption.url)
+    requireOption.url = this.formatUrl(requireOption.url)
     // 添加默认值
     if (!requireOption.method) {
       requireOption.method = defaultRequireOption.method || 'get'
@@ -160,7 +158,7 @@ class Require extends Data {
       return Promise.reject({ status: 'fail', code: 'undefined optionData', msg: '未定义请求数据！' })
     } else {
       this.$formatRequireOption(requireOption, defaultRequireOption)
-      const ruleItem = this.getRuleByURL(requireOption.url)
+      const ruleItem = this.getRuleByUrl(requireOption.url)
       return this.runInstance(new Instance(requireOption, this, ruleItem), ruleItem)
     }
   }
@@ -251,13 +249,13 @@ class Require extends Data {
       if (!msg) {
         msg = this.$parseStatus(error.response.status)
         if (!msg) {
-          msg = config.Require.fail.server
+          msg = config.require.fail.server
         }
       }
       errRes.msg = msg
     } else {
       errRes.code = 'require error'
-      errRes.msg = config.Require.fail.require
+      errRes.msg = config.require.fail.require
     }
     return errRes
   }

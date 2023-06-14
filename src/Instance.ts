@@ -68,10 +68,10 @@ class Instance {
     if (this.data.$dataType === 'form' && !isRefresh) {
       if (!this.data.headers) {
         this.data.headers = {
-          'Content-Type': config.Require.formContentType
+          'Content-Type': config.instance.formContentType
         }
       } else if (this.data.headers['Content-Type'] === undefined) {
-        this.data.headers['Content-Type'] = config.Require.formContentType
+        this.data.headers['Content-Type'] = config.instance.formContentType
       }
       if (this.data.$currentDataType === 'json' && this.data.data) {
         this.data.data = jsonToForm(this.data.data)
