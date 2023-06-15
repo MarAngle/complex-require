@@ -77,6 +77,8 @@ class Rule extends Data {
     this.checkUrl = initOption.checkUrl
     this.format = initOption.format
     this.formatUrl = initOption.formatUrl || defaultFormatUrl
+    this.refreshLogin = initOption.refreshLogin
+    this.refreshToken = initOption.refreshToken
     this.fail = initOption.fail || defaultFail
   }
   getTokenList() {
