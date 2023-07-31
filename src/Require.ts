@@ -1,5 +1,7 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios'
-import { Data, getType, getEnv  } from 'complex-utils'
+import { getType, getEnv  } from 'complex-utils'
+import { DefaultData } from 'complex-data-next'
+import { DefaultDataInitOption } from 'complex-data-next/src/data/DefaultData'
 import Rule, { RuleInitOption } from './Rule'
 import Instance, { InstanceInitOption, customParameters } from './Instance'
 import config from '../config'
@@ -25,7 +27,7 @@ export type errorType = {
 
 export type formatUrlType = (url: string) => string
 
-export type RequireInitOption = {
+export interface RequireInitOption extends DefaultDataInitOption {
   baseUrl?: string
   option?: AxiosRequestConfig
   status?: statusType
@@ -46,7 +48,7 @@ const defaultFormatUrl = function(url: string) {
 
 export type RequireMethod = 'get' | 'post' | 'delete' | 'put' | 'patch' | 'purge' | 'form' | 'json'
 
-class Require extends Data {
+class Require extends DefaultData {
   static $name = 'Require'
   service: AxiosInstance
   baseUrl: string
@@ -54,7 +56,8 @@ class Require extends Data {
   rule: Record<string, Rule>
   formatUrl: formatUrlType
   constructor(initOption: RequireInitOption) {
-    super()
+    super(initOption)
+    this.$triggerCreateLife('Require', 'beforeCreate', initOption)
     this.service = axios.create(initOption.option)
     this.baseUrl = initOption.baseUrl || ''
     this.formatUrl = this.getFormatUrl(initOption.formatUrl)
@@ -65,6 +68,7 @@ class Require extends Data {
     this.rule = {}
     let defaultProp: undefined | string = undefined
     initOption.rule.forEach(ruleOption => {
+      ruleOption.parent = this
       this.rule[ruleOption.prop] = new Rule(ruleOption)
       if (defaultProp === undefined) {
         defaultProp = ruleOption.prop
@@ -80,6 +84,7 @@ class Require extends Data {
     } else {
       this.$exportMsg(`未获取到默认请求处理规则！`, 'error')
     }
+    this.$triggerCreateLife('Require', 'created', initOption)
   }
   getFormatUrl(formatUrl?: formatUrlType) {
     if (formatUrl) {
@@ -186,16 +191,20 @@ class Require extends Data {
               resolve(responseData)
             } else if (responseData.status === 'login') {
               if (ruleItem.refreshLogin && !isRefresh) {
+                ruleItem.$triggerLife('beforeRefreshLogin', ruleItem)
                 ruleItem.refreshLogin().then(() => {
+                  ruleItem.$triggerLife('refreshLogined', ruleItem)
                   this.runInstance(instance, ruleItem, true).then(res => {
                     resolve(res)
                   }).catch(err => {
                     reject(err)
                   })
                 }).catch(err => {
+                  ruleItem.$triggerLife('refreshLoginFail', ruleItem)
                   reject(err)
                 })
               } else {
+                ruleItem.$triggerLife('login', ruleItem, isRefresh)
                 instance.fail(false, responseData.msg, 'error')
                 // 此处考虑登录的自动或打断实现方案
                 reject(responseData)

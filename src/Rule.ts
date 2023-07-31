@@ -1,7 +1,9 @@
-import { Data } from 'complex-utils'
-import { errorType } from './Require'
+import { DefaultData, LifeData } from 'complex-data-next'
+import { DefaultDataInitOption } from 'complex-data-next/src/data/DefaultData'
+import Require, { errorType } from './Require'
 import Instance from './Instance'
 import Token, { TokenInitOption } from './Token'
+import { upperCaseFirstChar } from 'complex-utils'
 
 export type tokenType = {
   time?: number
@@ -31,7 +33,7 @@ type refreshLoginType = () => Promise<unknown>
 type refreshTokenType = (tokenName: string) => Promise<unknown>
 type failType = (errRes: errorType) => string
 
-export interface RuleInitOption {
+export interface RuleInitOption extends DefaultDataInitOption<Require> {
   prop: string
   name: string
   token?: tokenType
@@ -52,11 +54,20 @@ function defaultFormatUrl(url: string) {
 function defaultFail() {
   return ''
 }
-
-class Rule extends Data {
+/**
+ * 已定义以下事件
+ * create相关事件
+ * login:需要登录
+ * token:需要token
+ * beforeRefreshToken:准备刷新token
+ * refreshTokened:刷新token完成
+ * refreshTokenFail:刷新token失败
+ * beforeRefreshLogin:准备刷新login
+ * refreshLogined:刷新login完成
+ * refreshLoginFail:刷新login失败
+ */
+class Rule extends DefaultData<Require> {
   static $name = 'Rule'
-  prop: string
-  name: string
   token: formatTokenType
   checkUrl: checkUrlType
   format: formatType
@@ -65,14 +76,13 @@ class Rule extends Data {
   refreshToken?: refreshTokenType
   fail: failType
   constructor(initOption: RuleInitOption) {
-    super()
-    this.prop = initOption.prop
-    this.name = initOption.name
+    super(initOption)
+    this.$triggerCreateLife('Rule', 'beforeCreate', initOption)
     const token = initOption.token || {}
     const tokenData: Record<string, Token> = {}
     if (token && token.data) {
       for (const tokenName in token.data) {
-        tokenData[tokenName] = new Token(token.data[tokenName], tokenName, this.prop, token.time, token.session)
+        tokenData[tokenName] = new Token(token.data[tokenName], tokenName, this.$prop, token.time, token.session)
       }
     }
     this.token = tokenData
@@ -82,6 +92,7 @@ class Rule extends Data {
     this.refreshLogin = initOption.refreshLogin
     this.refreshToken = initOption.refreshToken
     this.fail = initOption.fail || defaultFail
+    this.$triggerCreateLife('Rule', 'beforeCreate', initOption)
   }
   getTokenList() {
     return Object.keys(this.token)
@@ -141,17 +152,21 @@ class Rule extends Data {
   $refreshToken(instance: Instance, tokenName: string, isRefresh?: boolean): Promise<appendTokenStatus> {
     if (this.refreshToken && !isRefresh) {
       return new Promise((resolve, reject) => {
+        this.$triggerLife('beforeRefreshToken', this, tokenName, isRefresh)
         this.refreshToken!(tokenName).then(() => {
+          this.$triggerLife('refreshTokened', this, tokenName, isRefresh)
           this.$appendToken(instance, tokenName, true).then(res => {
             resolve(res)
           }).catch(err => {
             reject(err)
           })
         }).catch(err => {
+          this.$triggerLife('refreshTokenFail', this, tokenName, isRefresh)
           reject(err)
         })
       })
     } else {
+      this.$triggerLife('token', this, tokenName, isRefresh)
       return Promise.reject({ status: 'fail', code: 'empty token', msg: `Token:${tokenName}的值不存在` })
     }
   }
@@ -219,8 +234,9 @@ class Rule extends Data {
       return false
     }
   }
-  $selfName() {
-    return `(${super.$selfName()}:[${this.name}/${this.prop}])`
+  $triggerLife(...args: Parameters<LifeData['trigger']>) {
+    this.$parent!.$triggerLife(...['rule' + upperCaseFirstChar(args[0]), ...args.slice(1)])
+    super.$triggerLife(...args)
   }
 }
 
