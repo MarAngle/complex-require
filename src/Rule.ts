@@ -15,6 +15,7 @@ export interface appendTokenStatus {
   msg?: string
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface responseType<D = any> {
   status: 'success' | 'fail' | 'login'
   data: D
@@ -23,6 +24,7 @@ export interface responseType<D = any> {
 }
 
 type checkUrlType = (url: string) => boolean
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type formatType = (response: any, instance: Instance) => responseType
 type formatUrlType = (url: string) => string
 type refreshLoginType = () => Promise<unknown>
@@ -153,6 +155,7 @@ class Rule extends Data {
       return Promise.reject({ status: 'fail', code: 'empty token', msg: `Token:${tokenName}的值不存在` })
     }
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setToken(tokenName: string, data: any, noSave?: boolean) {
     if (this.token[tokenName]) {
       this.token[tokenName].setData(data, noSave)

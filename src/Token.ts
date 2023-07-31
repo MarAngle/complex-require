@@ -1,14 +1,17 @@
 import { isExist, setLocalData, getLocalData, removeLocalData, setSessionLocalData, getSessionLocalData, removeSessionLocalData } from 'complex-utils'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type getDataType = () => any
 type removeDataType = getDataType
 type clearDataType = getDataType
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type hasDataType = (data: any) => boolean
 type destroyDataType = clearDataType
 
 export type locationType = 'body' | 'header' | 'params'
 
 export interface TokenInitOption {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data?: any
   require?: boolean
   location?: locationType
@@ -21,16 +24,19 @@ export interface TokenInitOption {
   destroyData?: destroyDataType
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function hasData(data: any) {
   return isExist(data)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function setData(this: Token, data: any, noSave?: boolean) {
   this.data = data
   if (!noSave) {
     setLocalData(this.prop, data)
   }
 }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function setDataBySession(this: Token, data: any, noSave?: boolean) {
   this.data = data
   if (!noSave) {
@@ -92,6 +98,7 @@ class Token {
   static $name = 'Token'
   prop: string
   require?: boolean
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any
   location: locationType
   empty: boolean
@@ -100,6 +107,7 @@ class Token {
   $hasData: hasDataType
   $clearData?: clearDataType
   $destroyData?: destroyDataType
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setData: (data: any, noSave?: boolean) => void
   getData: getDataType
   removeData: removeDataType
@@ -130,6 +138,7 @@ class Token {
     }
     this.removeData = !session ? removeData : removeDataBySession
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   hasData(data: any) {
     let hasStatus: 'exist' | 'empty' | '' = 'exist'
     if (!this.$hasData(data)) {
