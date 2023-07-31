@@ -235,8 +235,13 @@ class Rule extends DefaultData<Require> {
     }
   }
   $triggerLife(...args: Parameters<LifeData['trigger']>) {
-    this.$parent!.$triggerLife(...['rule' + upperCaseFirstChar(args[0]), ...args.slice(1)])
+    const parentArgs = [...args] as Parameters<LifeData['trigger']>
+    parentArgs[0] = 'rule' + upperCaseFirstChar(args[0])
+    this.$parent!.$triggerLife(...parentArgs)
     super.$triggerLife(...args)
+  }
+  $selfName() {
+    return `RequireRule:${this.$name}/${this.$prop}`
   }
 }
 
