@@ -19,8 +19,10 @@ export interface customParameters {
   $currentDataType?: 'json' | 'form' // 当前数据格式
   $responseFormat?: boolean // 返回值格式化
   $fail?: boolean | failType // 错误回调
+  $format?: (options: InstanceInitOption, isRefresh?: boolean) => InstanceInitOption
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface InstanceInitOption<D = any> extends AxiosRequestConfig<D>, customParameters {
   url: string
   token?: boolean | string[]
@@ -39,6 +41,7 @@ class Instance {
     this.data = initOption
     this.rule = rule
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   appendData(location: locationType, prop: string, data: any) {
     if (location === 'body') {
       if (!this.data.data) {
@@ -76,6 +79,9 @@ class Instance {
       }
     } else if (this.data.$dataType === 'json') {
       this.data.data = JSON.stringify(this.data.data)
+    }
+    if (this.data.$format) {
+      this.data.$format(this.data, isRefresh)
     }
   }
   restoreData() {

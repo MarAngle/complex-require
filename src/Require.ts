@@ -19,6 +19,7 @@ export type errorType = {
   code: string
   msg: string
   instance: Instance
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   error: any
 }
 
@@ -33,7 +34,7 @@ export type RequireInitOption = {
 }
 
 const defaultFormatUrlWithBaseUrl = function(this: Require, url: string) {
-  if (url.indexOf('https://') != 0 && url.indexOf('http://') != 0) {
+  if (url.indexOf('https://') !== 0 && url.indexOf('http://') !== 0) {
     // 当前URL不以http/https开始，则认为此URL需要添加默认前缀
     url = this.baseUrl + url
   }
@@ -73,7 +74,7 @@ class Require extends Data {
       if (!this.rule.default) {
         this.rule.default = this.rule[defaultProp]
       }
-      if (getEnv('real') == 'development' && config.require.showRule) {
+      if (getEnv('real') === 'development' && config.require.showRule) {
         this.$exportMsg(`默认的请求处理规则为[${this.rule.default!.$selfName()}]`, 'log')
       }
     } else {
@@ -149,7 +150,7 @@ class Require extends Data {
     }
   }
   require(requireOption: requireOptionType, defaultRequireOption?: defaultRequireOptionType) {
-    if (getType(requireOption) != 'object') {
+    if (getType(requireOption) !== 'object') {
       return Promise.reject({ status: 'fail', code: 'undefined optionData', msg: '未定义请求数据！' })
     } else {
       this.$formatRequireOption(requireOption, defaultRequireOption)
@@ -163,10 +164,12 @@ class Require extends Data {
         this.$require(instance, ruleItem, isRefresh).then(res => {
           resolve(res)
         }).catch(err => {
+          // eslint-disable-next-line no-console
           console.error(err)
           reject(err)
         })
       }).catch(err => {
+        // eslint-disable-next-line no-console
         console.error(err)
         instance.fail(true, err.msg, 'error')
         reject(err)
@@ -176,7 +179,7 @@ class Require extends Data {
   $require(instance: Instance, ruleItem: Rule, isRefresh?: boolean) {
     return new Promise((resolve, reject) => {
       this.ajax(instance.data).then(response => {
-        if (instance.data.responseType === undefined || instance.data.responseType == 'json') {
+        if (instance.data.responseType === undefined || instance.data.responseType === 'json') {
           if (instance.data.$responseFormat) {
             const responseData = ruleItem.format(response, instance)
             if (responseData.status === 'success') {
@@ -230,6 +233,7 @@ class Require extends Data {
       return ''
     }
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   $formatError (error: any, instance: Instance, ruleItem: Rule) {
     const errRes: errorType = {
       status: 'fail',
@@ -278,6 +282,7 @@ class Require extends Data {
   json (optionData: requireOptionType) {
     return this.require(optionData, { method: 'post', $dataType: 'form' })
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setToken (tokenName: string, data: any, prop = 'default', noSave?: boolean) {
     if (this.rule[prop]) {
       this.rule[prop].setToken(tokenName, data, noSave)
