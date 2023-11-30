@@ -1,5 +1,5 @@
-import { DefaultData, LifeData } from 'complex-data-next'
-import { DefaultDataInitOption } from 'complex-data-next/src/data/DefaultData'
+import { DefaultData, LifeData } from 'complex-data'
+import { DefaultDataInitOption } from 'complex-data/src/data/DefaultData'
 import Require, { errorType } from './Require'
 import Instance from './Instance'
 import Token, { TokenInitOption } from './Token'
